@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diễn đàn mini | Cyber Tech City</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600;1,700&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ===================== VIDEO NỀN THÀNH PHỐ CÔNG NGHỆ 3D ===================== -->
+  <div class="cyber-bg-container" aria-hidden="true">
+    <video class="cyber-bg-video" autoplay muted loop playsinline preload="auto">
+      <source src="https://upload.wikimedia.org/wikipedia/commons/transcoded/d/d9/Chicago_Lights_-_City_Timelapse.webm/Chicago_Lights_-_City_Timelapse.webm.480p.vp9.webm" type="video/webm" />
+      <source src="https://upload.wikimedia.org/wikipedia/commons/d/d9/Chicago_Lights_-_City_Timelapse.webm" type="video/webm" />
+      <source src="https://upload.wikimedia.org/wikipedia/commons/7/79/First_nights_in_Tokyo.webm" type="video/webm" />
+    </video>
+    <div class="cyber-bg-overlay"></div>
+    <div class="cyber-bg-grid"></div>
+  </div>
+
+  <!-- ===================== THANH TRÊN ===================== -->
+  <header class="topbar">
+    <h1 class="logo">Diễn đàn mini <span class="logo__badge">CYBER CITY</span></h1>
+
+    <form id="search-form" class="filters" role="search">
+      <input id="keyword" type="search" placeholder="Tìm bài viết..." autocomplete="off" aria-label="Từ khoá tìm kiếm" />
+
+      <!-- Mức 2 (yêu cầu 7): JS đổ các thẻ từ GET /posts/tags vào đây -->
+      <select id="tag" aria-label="Lọc theo thẻ">
+        <option value="">Tất cả thẻ</option>
+      </select>
+
+      <!-- Mức 2 (yêu cầu 9): value dùng để suy ra sortBy và order -->
+      <select id="sort" aria-label="Sắp xếp">
+        <option value="">Mặc định</option>
+        <option value="views-desc">Nhiều lượt xem nhất</option>
+        <option value="title-asc">Tiêu đề A–Z</option>
+      </select>
+    </form>
+  </header>
+
+  <main class="container">
+    <!-- ===================== VÙNG TRẠNG THÁI =====================
+         JS bật/tắt class "is-hidden" và đổi class status--loading | status--error | status--empty -->
+    <div id="status" class="status is-hidden" role="status" aria-live="polite">
+      <span id="status-text"></span>
+      <button id="retry-btn" class="btn btn--danger is-hidden" type="button">Thử lại</button>
+    </div>
+
+    <!-- ===================== DANH SÁCH BÀI VIẾT =====================
+         Hai thẻ dưới đây chỉ là MẪU để bạn thấy giao diện trước khi có JS.
+         Khi làm xong yêu cầu 1, danh sách sẽ do JS tạo ra: hãy xoá hai thẻ mẫu này. -->
+    <section id="post-list" class="post-list" aria-label="Danh sách bài viết">
+      <article class="post-card" tabindex="0" data-sample>
+        <header class="author">
+          <img class="author__avatar" alt="" width="36" height="36" />
+          <span class="author__name">Tác giả #121</span>
+        </header>
+        <h2 class="post-card__title">Tiêu đề bài viết mẫu</h2>
+        <p class="post-card__excerpt">Đây là đoạn đầu nội dung bài viết, chỉ hiển thị khoảng 150 ký tự đầu rồi thêm dấu ba chấm nếu dài hơn...</p>
+        <ul class="tags">
+          <li class="tag">history</li>
+          <li class="tag">american</li>
+        </ul>
+        <footer class="post-card__stats">
+          <span class="stat"><span class="stat__label">Xem</span> <strong class="stat__value">305</strong></span>
+          <span class="stat"><span class="stat__label">Thích</span> <strong class="stat__value">192</strong></span>
+        </footer>
+      </article>
+
+      <article class="post-card" tabindex="0" data-sample>
+        <header class="author">
+          <img class="author__avatar" alt="" width="36" height="36" />
+          <span class="author__name">Tác giả #7</span>
+        </header>
+        <h2 class="post-card__title">Một tiêu đề rất dài để thử xem thẻ có bị vỡ hay không khi tên bài viết kéo dài thành rất nhiều chữ liên tiếp nhau</h2>
+        <p class="post-card__excerpt">Bài này không có thẻ nào, nên không được để lại khoảng trống ở dòng thẻ.</p>
+        <footer class="post-card__stats">
+          <span class="stat"><span class="stat__label">Xem</span> <strong class="stat__value">12</strong></span>
+          <span class="stat"><span class="stat__label">Thích</span> <strong class="stat__value">3</strong></span>
+        </footer>
+      </article>
+    </section>
+
+    <!-- ===================== TẢI THÊM (Mức 2, yêu cầu 6) ===================== -->
+    <div class="load-more">
+      <button id="load-more-btn" class="btn" type="button">Tải thêm</button>
+      <p id="end-message" class="end-message is-hidden">Đã hết bài viết</p>
+    </div>
+  </main>
+
+  <!-- ===================== MODAL CHI TIẾT BÀI VIẾT (Mức 3) =====================
+       Dùng thẻ <dialog>: mở bằng .showModal(), đóng bằng .close().
+       Phím Esc đóng sẵn; bấm ra ngoài thì bạn tự viết sự kiện. -->
+  <dialog id="post-dialog" class="dialog" aria-labelledby="dialog-title">
+    <button id="dialog-close" class="dialog__close" type="button" aria-label="Đóng">&times;</button>
+
+    <div class="author author--large">
+      <img id="dialog-author-avatar" class="author__avatar" alt="Avatar" width="48" height="48" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='19' fill='%230f172a' stroke='%2300f0ff' stroke-width='2'/%3E%3Ccircle cx='20' cy='15' r='6' fill='%2300f0ff' fill-opacity='0.8'/%3E%3Cpath d='M9 34c0-5.5 4.5-10 11-10s11 4.5 11 10' fill='%23a855f7' fill-opacity='0.6'/%3E%3C/svg%3E" />
+      <span id="dialog-author-name" class="author__name">Tác giả</span>
+    </div>
+
+    <h2 id="dialog-title" class="dialog__title"></h2>
+    <ul id="dialog-tags" class="tags"></ul>
+    <p id="dialog-body" class="dialog__body"></p>
+
+    <section class="comments" aria-label="Bình luận">
+      <h3 class="comments__title">Bình luận (<span id="comment-count">0</span>)</h3>
+
+      <!-- Trạng thái riêng của phần bình luận: đang tải, rỗng, lỗi + thử lại (yêu cầu 12) -->
+      <div id="comment-status" class="status is-hidden" role="status" aria-live="polite">
+        <span id="comment-status-text"></span>
+        <button id="comment-retry-btn" class="btn btn--danger is-hidden" type="button">Thử lại</button>
+      </div>
+
+      <ul id="comment-list" class="comment-list"></ul>
+
+      <!-- Yêu cầu 15: gửi bình luận giả lập -->
+      <form id="comment-form" class="comment-form">
+        <label for="comment-input" class="sr-only">Viết bình luận</label>
+        <textarea id="comment-input" rows="3" placeholder="Viết bình luận..." required></textarea>
+        <button id="comment-submit" class="btn btn--primary" type="submit">Gửi</button>
+      </form>
+    </section>
+  </dialog>
+
+  <!-- ===================== MẪU HTML ĐỂ JS NHÂN BẢN =====================
+       Thẻ <template> không hiển thị. Dùng template.content.cloneNode(true),
+       rồi điền dữ liệu bằng textContent (an toàn hơn innerHTML). -->
+  <template id="post-card-template">
+    <article class="post-card" tabindex="0">
+      <header class="author">
+        <img class="author__avatar" alt="Avatar" width="36" height="36" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='19' fill='%230f172a' stroke='%2300f0ff' stroke-width='2'/%3E%3Ccircle cx='20' cy='15' r='6' fill='%2300f0ff' fill-opacity='0.8'/%3E%3Cpath d='M9 34c0-5.5 4.5-10 11-10s11 4.5 11 10' fill='%23a855f7' fill-opacity='0.6'/%3E%3C/svg%3E" />
+        <span class="author__name"></span>
+      </header>
+      <h2 class="post-card__title"></h2>
+      <p class="post-card__excerpt"></p>
+      <ul class="tags"></ul>
+      <footer class="post-card__stats">
+        <span class="stat"><span class="stat__label">Xem</span> <strong class="stat__value stat__value--views"></strong></span>
+        <span class="stat"><span class="stat__label">Thích</span> <strong class="stat__value stat__value--likes"></strong></span>
+      </footer>
+    </article>
+  </template>
+
+  <template id="comment-template">
+    <li class="comment">
+      <strong class="comment__author"></strong>
+      <p class="comment__body"></p>
+      <span class="comment__likes"></span>
+    </li>
+  </template>
+
+  <!-- axios PHẢI nhúng trước app.js; cả hai đặt cuối body -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
